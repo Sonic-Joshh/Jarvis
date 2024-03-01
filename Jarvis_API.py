@@ -1,5 +1,5 @@
 import google.generativeai as genai
-import ast
+
 
 def load_value(filename):
     with open(filename, 'r') as f:

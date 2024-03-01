@@ -7,6 +7,8 @@ from pydub import AudioSegment
 from pydub.effects import speedup
 from PIL import Image
 
+# NOTE: To update any changes to code, run following commands in cmd, in the folder, 1. git add . | 2. git commit -m 'Changed ----' | 3. git push -u origin main
+
 logo = Image.open('C:/Users/JC/OneDrive/Desktop/PYTHON BEGGINERS/A_Jarvis_WebApp/ironman_logo.jpg')
 st.set_page_config(page_title='JARVIS- Your AI assistant', page_icon=logo)
 
