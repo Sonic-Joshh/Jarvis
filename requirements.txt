@@ -4,3 +4,4 @@ protobuf==4.25.3
 pydub==0.25.1
 streamlit==1.31.1
 google==3.0.0
+google.generativeai==0.3.2
