@@ -3,7 +3,7 @@ import mysql.connector
 config = {
     'user': 'root',
     'password': 'Stark@TECH1',
-    'host': 'localhost',
+    'host': 'https://jarvis-ai-assistant.onrender.com',
     'database': 'user_data_db'
 }
 
