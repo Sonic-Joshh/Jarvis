@@ -1,5 +1,8 @@
 import streamlit as st
+from PIL import Image
 
+logo = Image.open('ironman_logo.jpg')
+st.set_page_config(page_title='JARVIS- Your AI assistant', page_icon=logo)
 
 st.title("You can let Jarvis know information about you so it can  assist you better!")
 u_input =  st.text_input("Tell me something  about yourself", max_chars=200)

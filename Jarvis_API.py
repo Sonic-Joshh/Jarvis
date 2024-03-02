@@ -12,7 +12,7 @@ try:
 except IndexError:
     user_data = "I am Iron Man"
 
-print(user_data)
+# print(user_data)
 
 genai.configure(api_key="AIzaSyBGP1o8FZ4hgMdjxIF9uGyD6bl5jngpVbs")
 

@@ -3,9 +3,8 @@ from streamlit import errors
 import Jarvis_API 
 import base64
 from gtts import gTTS
-from pydub import AudioSegment
-from pydub.effects import speedup
 from PIL import Image
+from alarm import AlarmClock
 
 # NOTE: To update any changes to code, run following commands in cmd, in the folder, 1. git add . | 2. git commit -m 'Changed ----' | 3. git push -u origin main
 
@@ -28,10 +27,7 @@ def tts(text):
     speech = gTTS(text, lang='en', tld='co.uk', slow=False)
     speech_file = "audio.mp3"
     speech.save(speech_file)
-    audio = AudioSegment.from_mp3("audio.mp3")
-    sped_up_audio = speedup(audio, 1.3, 50)
-    sped_up_audio.export("sped_audio.mp3", format="mp3")# Speeds up the play
-    autoplay_audio(speech_file) # Switch to this for sped up responses but it will take longer: sped_audio.mp3
+    autoplay_audio(speech_file)
 
 st.title("JARVIS - AI Assistant")
 st.header("Beta Version 1.4")
@@ -78,3 +74,13 @@ if prompt != None and prompt != "None":
         tts(response)
 
     st.session_state.convo.append({"role": "assistant", "content" : response})
+
+if 'alarm' in str(prompt) or 'remind' in str(prompt) or 'alarm' in str(Jarvis_API.response(str(prompt))):
+    systemPrompt = AlarmClock(prompt)
+    if systemPrompt:
+        response = 'Sir, your alarm has rung! Please be notified. Is there anything else i can help you with today?'
+        with st.chat_message('assistant'):
+            st.markdown(response)
+        
+        if talk:
+            tts(response)
