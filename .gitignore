@@ -11,6 +11,8 @@ __pycache__/
 *.so
 
 bin.py
+.streamlit/
+credentials.json
 
 # Distribution / packaging
 .Python

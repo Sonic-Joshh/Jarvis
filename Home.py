@@ -9,9 +9,11 @@ import streamlit_authenticator as stauth
 from google.api_core import exceptions
 import database as db
 
-
-logo = Image.open('ironman_logo.jpg')
-st.set_page_config(page_title='JARVIS- Your AI assistant', page_icon=logo)
+try:
+    logo = Image.open('ironman_logo.jpg')
+    st.set_page_config(page_title='JARVIS- Your AI assistant', page_icon=logo)
+except errors.StreamlitAPIException:
+    pass
 
 # NOTE: To update any changes to code, run following commands in cmd, in the folder, 1. git add . | 2. git commit -m 'Changed ----' | 3. git push -u origin main
 names = ['Joshua Sharma', 'Caleb Sharma', 'Pramila Sharma', 'Lakshya Sharma', 'Rachel']
@@ -56,13 +58,9 @@ if auth_status == None:
     st.warning("Please enter your Username and Password!")
 if auth_status:
     #------INITIALIZE JARVIS
-    logs = db.get_log(username)
-    chat = []
-    for log in logs:
-        if len(logs) % 2 == 0:
-            chat.append({'role': log[2], "parts": [log[3]]})
+    chat = db.get_log('admin')
     history = train + chat
-    convo = model.start_chat(history=history)
+    convo = model.start_chat(history=train)
     def response(prompt):
         if prompt is not None:
             convo.send_message(prompt)
@@ -93,18 +91,26 @@ if auth_status:
 
     for message in st.session_state.convo:
         with st.chat_message(message["role"]):
-            st.markdown(message["parts"])
+            st.markdown(message["content"])
 
     prompt = st.chat_input("Enter a Prompt")
 
     if prompt:
         with st.chat_message("user"):
             st.markdown(prompt)
-        
         db.add_log(username, 'user', prompt)
-        st.session_state.convo.append({"role": "user", "parts": [prompt]})
+        st.session_state.convo.append({"role": "user", "content": prompt})
 
-    if prompt != None and prompt != "None":
+    if 'alarm' in str(prompt) or 'remind' in str(prompt):
+        systemPrompt = AlarmClock(prompt)
+        if systemPrompt:
+            response = 'Sir, your alarm has rung! Please be notified. Is there anything else i can help you with today?'
+            with st.chat_message('assistant'):
+                st.markdown(response)
+            db.add_log(username, 'model', response)
+            if talk:
+                tts(response)
+    elif prompt != None:
         c_prompt = str(prompt) + " Jarvis"
         try:
             response = response(c_prompt)
@@ -116,14 +122,4 @@ if auth_status:
         if talk:
             tts(response)
 
-        st.session_state.convo.append({"role": "model", "parts" : [response]})
-
-    if 'alarm' in str(prompt) or 'remind' in str(prompt):
-        systemPrompt = AlarmClock(prompt)
-        if systemPrompt:
-            response = 'Sir, your alarm has rung! Please be notified. Is there anything else i can help you with today?'
-            with st.chat_message('assistant'):
-                st.markdown(response)
-            db.add_log(username, 'model', response)
-            if talk:
-                tts(response)
+        st.session_state.convo.append({"role": "assistant", "content" : response})

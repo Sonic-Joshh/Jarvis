@@ -1,5 +1,4 @@
 import google.generativeai as genai
-import database as db
 
 genai.configure(api_key="AIzaSyBGP1o8FZ4hgMdjxIF9uGyD6bl5jngpVbs")
 

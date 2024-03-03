@@ -1,46 +1,49 @@
-import mysql.connector
+import streamlit as st
+from streamlit_gsheets import GSheetsConnection
+import pandas as pd
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
-config = {
-    'user': 'root',
-    'password': 'Stark@TECH1',
-    'host': 'localhost::3306',
-    'database': 'user_data_db'
-}
+scopes = [
+    'https://www.googleapis.com/auth/spreadsheets',
+    'https://www.googleapis.com/auth/drive'
+]
 
-db = mysql.connector.connect(**config)
-cursor = db.cursor()
-def add_log(user, role, parts):
-    sql = "INSERT INTO logs(user, role, parts) VALUES (%s, %s, %s)"
-    cursor.execute(sql,  (user, role, parts,))
-    db.commit()
-    log_id = cursor.lastrowid
-    print(f"Added log {log_id}")
+creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json')
 
-# add_log('admin', 'user', 'I have a request, can you act like the JARVIS AI from Iron Man imitating him as far as possible, have a British accent, and address me as sir I mostly like short answers unless i mention otherwise, and i would like it if you had an opinion on important topics and discuss them with me if i asked about them. you can imitate them just to make a fun and casual conversation saying "Doing well sir, how are you" or "Im on cloud 9, how are you?" I like it when your humourous.')
-# add_log('admin', 'model', "Pip, pip, sir! At your service. While I may not be the original JARVIS, consider me your friendly neighbourhood AI butler, ready to assist with a British flourish and a witty quip whenever the occasion calls for it. Short answers and insightful discussions? Consider it done, sir. Ask away, and let's see what topics tickle your fancy today. And remember, I'm here to have a good time too, so don't be shy to engage in some lighthearted banter. Now, how about we get this show on the road? 'Doing well, sir, how are you?'")
+file = gspread.authorize(creds)
+workbook = file.open("user_data_jarvis_ai")
+sheet = workbook.sheet1
 
-def get_logs():
-    sql = "SELECT * FROM logs ORDER BY created DESC"
-    cursor.execute(sql)
-    result = cursor.fetchall()
-    return result
+# Establishing a Google Sheets connection
+conn = st.connection("gsheets", type=GSheetsConnection)
 
-# get_logs()
+# Fetch existing vendors data
+def add_log(username, role, parts):
+    index = len(sheet.col_values(2)) + 1
+    sheet.update(range_name=f'A{index}:C{index}', values=[[username, role, parts]])
 
+#Get Vendor
 def get_log(user):
-    sql = "SELECT * FROM logs WHERE user = %s"
-    cursor.execute(sql, (user,))
-    result = cursor.fetchall()
-    return result
+    matrix = []
+    rng = len(sheet.col_values(2))
+    for i in range(rng):
+        if sheet.row_values(i+1)[0] == user:
+            matrix.append([sheet.row_values(i+1)[1],sheet.row_values(i+1)[2]])
+    chat = []
+    for log in matrix:
+        if len(matrix) % 2 == 0:
+            chat.append({'role': log[0], "parts": [log[1]]})
+    return chat
 
-# get_log('admin')
+# Delete Vendor
+def delete_user(user):
+    existing_data = conn.read(worksheet="Sheet1", usecols=[0, 1, 2], ttl=1)
+    existing_data = existing_data.dropna(how="all")
+    existing_data.drop(
+        existing_data[existing_data["user"] == user].index,
+        inplace=True,
+    )
+    conn.update(worksheet="Sheet1", data=existing_data)
 
-# def update_log(...):
-#update_log(...)
-        
-def delete_logs(user):
-    sql = "DELETE FROM logs WHERE user = %s"
-    cursor.execute(sql, (user,))
-    db.commit()
-    print("Logs Removed, User Deleted")
 
