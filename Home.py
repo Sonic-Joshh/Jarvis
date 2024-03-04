@@ -7,7 +7,8 @@ from PIL import Image
 from alarm import AlarmClock
 import streamlit_authenticator as stauth
 from google.api_core import exceptions
-import database as db
+import Data as db
+
 
 try:
     logo = Image.open('ironman_logo.jpg')
@@ -58,8 +59,9 @@ if auth_status == None:
     st.warning("Please enter your Username and Password!")
 if auth_status:
     #------INITIALIZE JARVIS
-    chat = db.get_log('admin')
+    chat = db.get_logs('admin')
     history = train + chat
+    print(history)
     convo = model.start_chat(history=train)
     def response(prompt):
         if prompt is not None:
